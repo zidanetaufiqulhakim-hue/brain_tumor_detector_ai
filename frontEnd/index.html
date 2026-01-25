@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Tumor AI - Detection & Analysis</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="title">Brain Tumor AI</h1>
+            <p class="subtitle">Intelligent Medical Imaging Analysis</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Panel: Input -->
+            <div class="panel left-panel">
+                <div class="panel-content">
+                    <h2 class="panel-title">Upload MRI Scan</h2>
+                    
+                    <!-- File Upload Box -->
+                    <div class="upload-box" id="uploadBox">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p class="upload-text">Drag & drop your MRI image here</p>
+                        <p class="upload-subtext">or click to browse</p>
+                        <input type="file" id="fileInput" class="file-input" accept="image/*" hidden>
+                    </div>
+
+                    <!-- Image Preview -->
+                    <div class="preview-container" id="previewContainer" style="display: none;">
+                        <div class="preview-label">Image Selected</div>
+                        <img id="previewImage" class="preview-image" alt="MRI Preview">
+                        <button class="remove-btn" id="removeBtn">Replace Image</button>
+                    </div>
+
+                    <!-- Analyze Button -->
+                    <button class="analyze-btn" id="analyzeBtn" disabled>
+                        <span class="btn-text">Analyze</span>
+                        <span class="btn-spinner" style="display: none;"></span>
+                    </button>
+
+                    <!-- Error Message -->
+                    <div class="error-message" id="errorMessage" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Results -->
+            <div class="panel right-panel">
+                <div class="panel-content">
+                    <h2 class="panel-title">Analysis Results</h2>
+
+                    <!-- Results Container (Initially Hidden) -->
+                    <div class="results-container" id="resultsContainer" style="opacity: 0;">
+                        <!-- Condition Section -->
+                        <section class="condition-section">
+                            <div class="condition-label">Diagnosis</div>
+                            <div class="condition-result" id="conditionResult">
+                                <!-- Dynamically populated -->
+                            </div>
+                        </section>
+
+                        <!-- Probability Distribution Section -->
+                        <section class="probability-section">
+                            <div class="section-title">Confidence Distribution</div>
+                            <div class="probability-bars">
+                                <!-- Glioma -->
+                                <div class="probability-item">
+                                    <div class="probability-header">
+                                        <span class="prob-label">Glioma</span>
+                                        <span class="prob-percentage" id="gliomaPercent">0%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="gliomaBar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Meningioma -->
+                                <div class="probability-item">
+                                    <div class="probability-header">
+                                        <span class="prob-label">Meningioma</span>
+                                        <span class="prob-percentage" id="meningiomaPercent">0%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="meningiomaBar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Pituitary -->
+                                <div class="probability-item">
+                                    <div class="probability-header">
+                                        <span class="prob-label">Pituitary</span>
+                                        <span class="prob-percentage" id="pituitaryPercent">0%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="pituitaryBar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Additional Info -->
+                        <section class="info-section">
+                            <div class="info-box">
+                                <p class="info-note">This analysis is intended as a diagnostic aid. Please consult with a qualified medical professional for final diagnosis.</p>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Placeholder (Before Analysis) -->
+                    <div class="placeholder" id="placeholder">
+                        <svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+                            <path d="M12 6v6m0 4v.01"></path>
+                        </svg>
+                        <p>Upload an image to begin analysis</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

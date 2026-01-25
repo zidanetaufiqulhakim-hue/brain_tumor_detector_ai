@@ -1,0 +1,316 @@
+/* ============================================
+   DOM ELEMENTS
+   ============================================ */
+
+const uploadBox = document.getElementById('uploadBox');
+const fileInput = document.getElementById('fileInput');
+const previewContainer = document.getElementById('previewContainer');
+const previewImage = document.getElementById('previewImage');
+const removeBtn = document.getElementById('removeBtn');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const errorMessage = document.getElementById('errorMessage');
+const resultsContainer = document.getElementById('resultsContainer');
+const placeholder = document.getElementById('placeholder');
+const conditionResult = document.getElementById('conditionResult');
+
+/* ============================================
+   STATE MANAGEMENT
+   ============================================ */
+
+let selectedFile = null;
+
+/* ============================================
+   FILE UPLOAD HANDLERS
+   ============================================ */
+
+// Upload box click
+uploadBox.addEventListener('click', () => {
+    fileInput.click();
+});
+
+// File input change
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        handleFileSelect(file);
+    }
+});
+
+// Drag and drop
+uploadBox.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadBox.classList.add('drag-over');
+});
+
+uploadBox.addEventListener('dragleave', () => {
+    uploadBox.classList.remove('drag-over');
+});
+
+uploadBox.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadBox.classList.remove('drag-over');
+    
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+        handleFileSelect(file);
+    } else {
+        showError('Please upload an image file');
+    }
+});
+
+/* ============================================
+   FILE HANDLING
+   ============================================ */
+
+function handleFileSelect(file) {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        showError('Please select a valid image file');
+        return;
+    }
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+        showError('File size must be less than 10MB');
+        return;
+    }
+
+    selectedFile = file;
+    clearError();
+
+    // Read and display preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        previewImage.src = e.target.result;
+        uploadBox.style.display = 'none';
+        previewContainer.style.display = 'block';
+        analyzeBtn.disabled = false;
+        analyzeBtn.style.opacity = '1';
+        analyzeBtn.style.cursor = 'pointer';
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeImage() {
+    selectedFile = null;
+    fileInput.value = '';
+    previewContainer.style.display = 'none';
+    uploadBox.style.display = 'block';
+    analyzeBtn.disabled = true;
+    analyzeBtn.style.opacity = '0.5';
+    analyzeBtn.style.cursor = 'not-allowed';
+    placeholder.style.display = 'block';
+    resultsContainer.style.opacity = '0';
+    clearError();
+}
+
+removeBtn.addEventListener('click', removeImage);
+
+/* ============================================
+   ERROR HANDLING
+   ============================================ */
+
+function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+}
+
+function clearError() {
+    errorMessage.style.display = 'none';
+    errorMessage.textContent = '';
+}
+
+/* ============================================
+   ANALYSIS
+   ============================================ */
+
+analyzeBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+
+    startAnalysis();
+
+    try {
+        // Prepare FormData
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        // Always use absolute URL for backend
+        const backendUrl = 'http://localhost:8000/predict';
+
+        console.log('Sending request to:', backendUrl);
+
+        const response = await fetch(backendUrl, {
+            method: 'POST',
+            body: formData,
+            // Don't set Content-Type header - let browser set it with boundary
+        });
+
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`Server error: ${response.status} - ${errorData.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('Analysis result:', data);
+        displayResults(data);
+    } catch (error) {
+        console.error('Analysis error:', error);
+        showError(`Analysis failed: ${error.message}`);
+        stopAnalysis();
+    }
+});
+
+function startAnalysis() {
+    analyzeBtn.disabled = true;
+    const btnText = analyzeBtn.querySelector('.btn-text');
+    const spinner = analyzeBtn.querySelector('.btn-spinner');
+    btnText.style.display = 'none';
+    spinner.style.display = 'block';
+}
+
+function stopAnalysis() {
+    analyzeBtn.disabled = false;
+    const btnText = analyzeBtn.querySelector('.btn-text');
+    const spinner = analyzeBtn.querySelector('.btn-spinner');
+    btnText.style.display = 'inline';
+    spinner.style.display = 'none';
+}
+
+/* ============================================
+   RESULTS DISPLAY
+   ============================================ */
+
+function displayResults(data) {
+    stopAnalysis();
+    
+    // Validate response format
+    if (!data.probability_distribution && !data.probabilities) {
+        showError('Invalid response format from server');
+        return;
+    }
+
+    // Handle both response formats
+    const probDist = data.probability_distribution || data.probabilities;
+    
+    // Hide placeholder and show results
+    placeholder.style.display = 'none';
+    resultsContainer.style.opacity = '1';
+
+    // Display condition
+    displayCondition(data.predicted_class);
+
+    // Animate probability bars - normalize the keys
+    const normalizedProbs = {
+        glioma: probDist.glioma_tumor || probDist.glioma || 0,
+        meningioma: probDist.meningioma_tumor || probDist.meningioma || 0,
+        pituitary: probDist.pituitary_tumor || probDist.pituitary || 0
+    };
+    
+    animateProbabilityBars(normalizedProbs);
+    
+    clearError();
+}
+
+function displayCondition(prediction) {
+    // Normalize prediction format (backend returns "glioma_tumor", "pituitary_tumor", etc.)
+    const normalizedPrediction = (prediction || '').toLowerCase().replace('_tumor', '');
+    const isTumor = ['glioma', 'meningioma', 'pituitary'].includes(normalizedPrediction);
+    
+    conditionResult.className = 'condition-result ' + (isTumor ? 'tumor' : 'healthy');
+    
+    if (isTumor) {
+        // Extract tumor type from normalized prediction
+        const tumorType = normalizedPrediction.charAt(0).toUpperCase() + normalizedPrediction.slice(1);
+        conditionResult.innerHTML = `
+            <span>Tumor Detected</span>
+            <span class="condition-badge">
+                <svg class="badge-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="10"></circle>
+                </svg>
+                ${tumorType}
+            </span>
+        `;
+    } else {
+        conditionResult.innerHTML = `
+            <span>Condition: Healthy</span>
+            <span class="condition-badge" style="background-color: rgba(39, 174, 96, 0.1);">
+                <svg class="badge-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+                </svg>
+                No tumor detected
+            </span>
+        `;
+    }
+}
+
+function animateProbabilityBars(probabilities) {
+    // Normalize probabilities to percentages
+    const gliomaPercent = Math.round((probabilities.glioma || 0) * 100);
+    const meningiomaPercent = Math.round((probabilities.meningioma || 0) * 100);
+    const pituitaryPercent = Math.round((probabilities.pituitary || 0) * 100);
+
+    // Animate with staggered delays
+    animateBar('gliomaBar', 'gliomaPercent', gliomaPercent, 0);
+    animateBar('meningiomaBar', 'meningiomaPercent', meningiomaPercent, 100);
+    animateBar('pituitaryBar', 'pituitaryPercent', pituitaryPercent, 200);
+}
+
+function animateBar(barId, percentId, targetPercent, delay) {
+    const bar = document.getElementById(barId);
+    const percentElement = document.getElementById(percentId);
+    
+    // Set the bar element to start animating after the delay
+    setTimeout(() => {
+        bar.style.width = targetPercent + '%';
+        animatePercentageCounter(percentElement, targetPercent, 1200);
+    }, delay);
+}
+
+function animatePercentageCounter(element, targetValue, duration) {
+    let currentValue = 0;
+    const increment = targetValue / (duration / 16); // ~60fps
+    
+    const interval = setInterval(() => {
+        currentValue += increment;
+        if (currentValue >= targetValue) {
+            currentValue = targetValue;
+            clearInterval(interval);
+        }
+        element.textContent = Math.round(currentValue) + '%';
+    }, 16);
+}
+
+/* ============================================
+   MOCK DATA FOR TESTING
+   ============================================ */
+
+// Uncomment to test the UI without backend
+/*
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('UI ready. Set up mock data for testing:');
+    
+    // Override analyze button to use mock data
+    analyzeBtn.removeEventListener('click', undefined);
+    analyzeBtn.addEventListener('click', async () => {
+        startAnalysis();
+        
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        const mockData = {
+            prediction: 'glioma',
+            probabilities: {
+                glioma: 0.72,
+                meningioma: 0.18,
+                pituitary: 0.10
+            }
+        };
+        
+        displayResults(mockData);
+    });
+    
+    console.log('Mock mode enabled. Upload an image to test.');
+});
+*/

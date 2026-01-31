@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brain Tumor AI - Detection & Analysis</title>
+    <title>TumorScope</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <h1 class="title">Brain Tumor AI</h1>
-            <p class="subtitle">Intelligent Medical Imaging Analysis</p>
+            <h1 class="title">TumorScope</h1>
+            <p class="subtitle">AI-Powered Brain Tumor Detection</p>
         </header>
 
         <!-- Main Content -->
@@ -62,13 +62,16 @@
                         <section class="condition-section">
                             <div class="condition-label">Diagnosis</div>
                             <div class="condition-result" id="conditionResult">
+                            
                                 <!-- Dynamically populated -->
                             </div>
+
+                            <p class="condition-description" id="conditionDescription"></p>
                         </section>
 
                         <!-- Probability Distribution Section -->
                         <section class="probability-section">
-                            <div class="section-title">Confidence Distribution</div>
+                            <div class="section-title">Estimated Tumor Likelihoods</div>
                             <div class="probability-bars">
                                 <!-- Glioma -->
                                 <div class="probability-item">
@@ -126,6 +129,77 @@
         </main>
     </div>
 
+
+    <!-- ABOUT THE MODEL DIV-->
+    <button class="about-btn" id="aboutBtn">Model Info</button>
+
+<div id="modelInfo" class="model-info hidden">
+  <div class="model-info-header">
+    <h3>About The Model</h3>
+    <button id="closeAboutBtn" class="close-btn">✕</button>
+  </div>
+
+  <div class="model-info-content">
+    <h4>1. Model Used</h4>
+    <p>
+      <strong>Architecture:</strong> Tuned Xception Model (CNN-based)<br>
+      The Xception architecture was fine-tuned on brain MRI data to support
+      multi-class tumor classification with a focus on recall and interpretability.
+    </p>
+
+    <h4>2. Supported Classes</h4>
+    <ul>
+      <li>Healthy</li>
+      <li>Pituitary Tumor</li>
+      <li>Glioma</li>
+      <li>Meningioma</li>
+    </ul>
+
+    <h4>3. Model Performance</h4>
+
+    <p><strong>a) Classification Report</strong></p>
+    <pre>
+Glioma       Precision: 0.91  Recall: 1.00  F1: 0.95
+Healthy      Precision: 1.00  Recall: 1.00  F1: 1.00
+Meningioma   Precision: 0.90  Recall: 0.90  F1: 0.90
+Pituitary    Precision: 1.00  Recall: 0.90  F1: 0.95
+
+Overall Accuracy: 95% (81 samples)
+    </pre>
+
+    <p><strong>b) Confusion Matrix</strong><br>
+      Minor confusion observed between Glioma and Meningioma due to MRI visual similarity.
+    </p>
+
+    <p><strong>c) Performance Interpretation</strong></p>
+    <ul>
+      <li>High recall minimizes false negatives</li>
+      <li>Healthy class achieved perfect precision & recall</li>
+      <li>Model prioritizes sensitivity over aggressive certainty</li>
+    </ul>
+
+    <h4>4. Purpose</h4>
+    <p>
+      <strong>TumorScope</strong> assists early-stage brain tumor screening by
+      providing probabilistic insights and visual confidence indicators.
+    </p>
+
+    <h4>5. Warning & Disclaimer</h4>
+    <p class="warning">
+      This AI system is a decision-support tool only.<br>
+      Results must be interpreted by qualified medical professionals.<br>
+      Do not rely solely on this system for diagnosis.
+    </p>
+  </div>
+</div>
+
+
+    
+</div>
+
+
+    <!-- Water mark-->
+    <div class="watermark">© 2026 Zidane Hakim - TumorScope.com</div>
     <script src="app.js"></script>
 </body>
 </html>

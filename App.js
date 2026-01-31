@@ -12,12 +12,28 @@ const errorMessage = document.getElementById('errorMessage');
 const resultsContainer = document.getElementById('resultsContainer');
 const placeholder = document.getElementById('placeholder');
 const conditionResult = document.getElementById('conditionResult');
+const aboutBtn = document.getElementById('aboutBtn');
+const modelInfo = document.getElementById('modelInfo');
+const closeAboutBtn = document.getElementById('closeAboutBtn');
+const conditionDescription = document.getElementById("conditionDescription");
 
 /* ============================================
    STATE MANAGEMENT
    ============================================ */
 
 let selectedFile = null;
+
+/* ============================================
+   ABOUT THE MODEL MODAL HANDLERS
+   ============================================ */
+
+aboutBtn.addEventListener('click', () => {
+  modelInfo.classList.remove('hidden');
+});
+
+closeAboutBtn.addEventListener('click', () => {
+  modelInfo.classList.add('hidden');
+});
 
 /* ============================================
    FILE UPLOAD HANDLERS
@@ -81,7 +97,7 @@ function handleFileSelect(file) {
     // Read and display preview
     const reader = new FileReader();
     reader.onload = (e) => {
-        previewImage.src = e.target.result;
+        previewImage.src = e.target.result; 
         uploadBox.style.display = 'none';
         previewContainer.style.display = 'block';
         analyzeBtn.disabled = false;
@@ -124,25 +140,25 @@ function clearError() {
    ANALYSIS
    ============================================ */
 
-analyzeBtn.addEventListener('click', async () => {
+analyzeBtn.addEventListener('click', async () => { 
     if (!selectedFile) return;
 
-    startAnalysis();
+    startAnalysis(); // Disable button and show spinner
 
     try {
         // Prepare FormData
-        const formData = new FormData();
-        formData.append('file', selectedFile);
+        const formData = new FormData(); // Corrected variable name
+        formData.append('file', selectedFile); // Append the selected file
 
         // Always use absolute URL for backend
         const backendUrl = 'http://localhost:8000/predict';
 
         console.log('Sending request to:', backendUrl);
 
-        const response = await fetch(backendUrl, {
+        const response = await fetch(backendUrl, { 
             method: 'POST',
-            body: formData,
-            // Don't set Content-Type header - let browser set it with boundary
+            body: formData, 
+            // No need to set Content-Type for FormData; browser handles it
         });
 
         console.log('Response status:', response.status);
@@ -155,6 +171,7 @@ analyzeBtn.addEventListener('click', async () => {
         const data = await response.json();
         console.log('Analysis result:', data);
         displayResults(data);
+
     } catch (error) {
         console.error('Analysis error:', error);
         showError(`Analysis failed: ${error.message}`);
@@ -164,8 +181,8 @@ analyzeBtn.addEventListener('click', async () => {
 
 function startAnalysis() {
     analyzeBtn.disabled = true;
-    const btnText = analyzeBtn.querySelector('.btn-text');
-    const spinner = analyzeBtn.querySelector('.btn-spinner');
+    const btnText = analyzeBtn.querySelector('.btn-text'); // Assuming there's a span with class 'btn-text' for button text
+    const spinner = analyzeBtn.querySelector('.btn-spinner'); // Assuming there's a span with class 'btn-spinner' for spinner
     btnText.style.display = 'none';
     spinner.style.display = 'block';
 }
@@ -215,14 +232,14 @@ function displayResults(data) {
 
 function displayCondition(prediction) {
     // Normalize prediction format (backend returns "glioma_tumor", "pituitary_tumor", etc.)
-    const normalizedPrediction = (prediction || '').toLowerCase().replace('_tumor', '');
-    const isTumor = ['glioma', 'meningioma', 'pituitary'].includes(normalizedPrediction);
-    
+    const normalizedPrediction = (prediction || '').toLowerCase().replace('_tumor', ''); // e.g., "glioma_tumor" -> "glioma"
+    const isTumor = ['glioma', 'meningioma', 'pituitary'].includes(normalizedPrediction); // Check if prediction indicates a tumor
     conditionResult.className = 'condition-result ' + (isTumor ? 'tumor' : 'healthy');
-    
+
     if (isTumor) {
         // Extract tumor type from normalized prediction
         const tumorType = normalizedPrediction.charAt(0).toUpperCase() + normalizedPrediction.slice(1);
+        updateDiagnosisUI(tumorType.toLowerCase());
         conditionResult.innerHTML = `
             <span>Tumor Detected</span>
             <span class="condition-badge">
@@ -233,6 +250,7 @@ function displayCondition(prediction) {
             </span>
         `;
     } else {
+        updateDiagnosisUI(null);
         conditionResult.innerHTML = `
             <span>Condition: Healthy</span>
             <span class="condition-badge" style="background-color: rgba(39, 174, 96, 0.1);">
@@ -282,6 +300,18 @@ function animatePercentageCounter(element, targetValue, duration) {
     }, 16);
 }
 
+function updateDiagnosisUI(type) {
+    const descriptions = {
+        glioma:
+            "Glioma is a tumor that originates from glial cells, which support and protect neurons in the brain.",
+        meningioma:
+            "Meningioma develops from the meninges, the protective membranes surrounding the brain and spinal cord.",
+        pituitary:
+            "Pituitary tumors arise from the pituitary gland and may affect hormone regulation and growth."
+    };
+
+    conditionDescription.textContent = descriptions[type] || "";
+}
 /* ============================================
    MOCK DATA FOR TESTING
    ============================================ */

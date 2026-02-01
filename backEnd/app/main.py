@@ -63,12 +63,7 @@ async def predict(file: UploadFile = File(...)):
         # 2) Predict using the utility function (includes grad-cam computation)
         prediction_result = predict_img(image, model=model, target_size=(224, 224))
         
-        # 3) Convert grad-cam heatmap to base64 for JSON response
-        heatmap = prediction_result["gradcam_heatmap"]
-        heatmap_uint8 = (heatmap * 255).astype(np.uint8)
-        heatmap_base64 = heatmap_uint8.tolist()
-        
-        # 4) Return response
+        # 3) Return response
         return JSONResponse({
             "status": "success",
             "probability_distribution": {
@@ -78,7 +73,7 @@ async def predict(file: UploadFile = File(...)):
                 "meningioma_tumor": prediction_result["meningioma_tumor_proba"]
             },
             "predicted_class": prediction_result["predicted_class"],
-            "gradcam_heatmap": heatmap_base64
+            "gradcam_image": prediction_result["gradcam_image"] if prediction_result["gradcam_image"] else None
         })
         
     except Exception as e:

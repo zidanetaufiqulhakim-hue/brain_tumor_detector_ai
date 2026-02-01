@@ -217,6 +217,16 @@ function displayResults(data) {
 
     // Display condition
     displayCondition(data.predicted_class);
+    if (!data.predicted_class) {
+        showError('No prediction received from server');
+        return;
+    }
+
+    // Display Grad-CAM image if available
+
+    if (data.gradcam_image != null){
+        displayGradCamImage(data.gradcam_image);
+    }
 
     // Animate probability bars - normalize the keys
     const normalizedProbs = {
@@ -312,6 +322,31 @@ function updateDiagnosisUI(type) {
 
     conditionDescription.textContent = descriptions[type] || "";
 }
+
+function displayGradCamImage(gradcamData) {
+    const gradcamSection = document.getElementById('gradcamSection');
+    const gradcamContainer = document.getElementById('gradcamContainer');
+
+    gradcamContainer.innerHTML = '';
+
+    const img = document.createElement('img');
+    img.src = `data:image/png;base64,${gradcamData}`;
+    img.alt = 'Grad-CAM Visualization';
+    img.style.width = '100%';
+    img.style.borderRadius = '8px';
+    img.style.marginTop = '8px';
+
+    gradcamContainer.appendChild(img);
+    gradcamSection.style.display = 'block';
+
+    //Clear the gradeCam image for the next use
+    removeBtn.addEventListener('click', ()=> {
+        gradcamContainer.innerHTML = '';
+        gradcamSection.style.display = 'none'
+    })
+}
+
+
 /* ============================================
    MOCK DATA FOR TESTING
    ============================================ */

@@ -308,7 +308,7 @@ html, body {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--light-gray);
+    color: var(--medium-gray);
     margin-bottom: 0.75rem;
 }
 

@@ -49,6 +49,12 @@
                     <!-- Error Message -->
                     <div class="error-message" id="errorMessage" style="display: none;"></div>
                 </div>
+                    <!-- Additional Info -->
+                    <section class="info-section">
+                        <div class="info-box">
+                            <p class="info-note">This analysis is intended as a diagnostic aid. Please consult with a qualified medical professional for final diagnosis.</p>
+                        </div>
+                    </section>
             </div>
 
             <!-- Right Panel: Results -->
@@ -108,12 +114,13 @@
                             </div>
                         </section>
 
-                        <!-- Additional Info -->
-                        <section class="info-section">
-                            <div class="info-box">
-                                <p class="info-note">This analysis is intended as a diagnostic aid. Please consult with a qualified medical professional for final diagnosis.</p>
-                            </div>
+                    <!-- Grad-CAM Visualization -->
+                        <section class="gradcam-section" id="gradcamSection" style="display:none;">
+                        <h3 class="section-title">Model Attention (Grad-CAM)</h3>
+                        <p class="section-description">A heatmap that highlights the specific regions of an image the model "paid attention to" before making its decision. Note: It may not locate the tumor's position precisely.</p>
+                        <div id="gradcamContainer"></div>
                         </section>
+
                     </div>
 
                     <!-- Placeholder (Before Analysis) -->

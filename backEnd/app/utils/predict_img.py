@@ -40,7 +40,7 @@ def compute_gradcam(img_array, model):
     heatmap = tf.reduce_sum(conv_outputs * pooled_grads, axis=-1)
 
     heatmap = tf.maximum(heatmap, 0)
-    heatmap /= tf.reduce_max(heatmap) + 1e-8
+    heatmap = tf.reduce_max(heatmap) + 1e-8
 
     return heatmap.numpy()
 

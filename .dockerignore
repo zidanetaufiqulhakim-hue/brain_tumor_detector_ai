@@ -1,0 +1,17 @@
+.git
+.gitignore
+.conda
+frontEnd
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Python caches and local envs
+**/__pycache__/
+**/*.pyc
+**/.venv/
+**/venv/
+
+# Only keep the model format used by backend startup (.h5)
+backEnd/app/model/*.keras

@@ -5,7 +5,8 @@ from PIL import Image
 import io
 import tensorflow as tf
 import numpy as np
-from utils.predict_img import predict_img
+from pathlib import Path
+from app.utils.predict_img import predict_img
 import base64
 import os
 
@@ -29,17 +30,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load model once at startup
-MODEL_PATH = "model/xception_brain_tumor_classifier_v2.h5"
+# Load model once at startup (resolve path relative to this file)
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "model" / "xception_brain_tumor_classifier_v2.h5"
 
 # Load model with custom object scope to handle batch_shape compatibility
 try:
-    model = tf.keras.models.load_model(MODEL_PATH, compile=False, safe_mode=False)
+    model = tf.keras.models.load_model(str(MODEL_PATH), compile=False, safe_mode=False)
 except (ValueError, TypeError) as e:
     if "batch_shape" in str(e):
         # Fallback: Use the .h5 model file if .keras fails
         print(f"Keras format loading failed: {e}. Attempting to load .h5 format...")
-        model = tf.keras.models.load_model("model/xception_brain_tumor_classifier_v2.h5", compile=False)
+        model = tf.keras.models.load_model(str(MODEL_PATH), compile=False)
     else:
         raise
 

@@ -40,7 +40,7 @@ def compute_gradcam(img_array, model):
     heatmap = tf.reduce_sum(conv_outputs * pooled_grads, axis=-1)
 
     heatmap = tf.maximum(heatmap, 0)
-    heatmap = tf.reduce_max(heatmap) + 1e-8
+    heatmap /= tf.reduce_max(heatmap) + 1e-8
 
     return heatmap.numpy()
 
@@ -81,7 +81,7 @@ def predict_img(image: Image.Image, model, target_size=(224, 224)):
     img_array = tf.keras.applications.xception.preprocess_input(img_array)
 
     # Predict
-    y_proba = model.predict(img_array)
+    y_proba = model.predict(img_array, verbose=0)
 
     #  classes=["healthy","pituitary","glioma","meningioma"],
     label_map = {
@@ -94,11 +94,13 @@ def predict_img(image: Image.Image, model, target_size=(224, 224)):
     # label the prediction
     predicted_class = label_map[np.argmax(y_proba)]
 
-    # Grad-CAM (tensor, not PIL)
-    heatmap = compute_gradcam(img_array, model)
-
-    # render gradcam on image
-    gradcam_img = render_gradcam_on_image(img, heatmap)
+    # Grad-CAM is best-effort so prediction can still succeed if it fails
+    gradcam_img = None
+    try:
+        heatmap = compute_gradcam(img_array, model)
+        gradcam_img = render_gradcam_on_image(img, heatmap)
+    except Exception:
+        gradcam_img = None
 
     return {
         "healthy_proba": round(float(y_proba[0][0]), 4),
@@ -108,5 +110,4 @@ def predict_img(image: Image.Image, model, target_size=(224, 224)):
         "predicted_class": predicted_class,  # Empty heatmap for healthy
         "gradcam_image": gradcam_img if predicted_class != "healthy" else None
         }
-
 

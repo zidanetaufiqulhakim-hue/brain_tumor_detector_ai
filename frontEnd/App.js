@@ -150,12 +150,8 @@ analyzeBtn.addEventListener('click', async () => {
         const formData = new FormData(); // Corrected variable name
         formData.append('file', selectedFile); // Append the selected file
 
-        // Use the same host as the frontend page; fallback for file:// usage
-        const backendBase =
-            (window.location.protocol === 'http:' || window.location.protocol === 'https:')
-                ? `${window.location.protocol}//${window.location.hostname}:8000`
-                : 'http://localhost:8000';
-        const backendUrl = `${backendBase}/predict`;
+        // Always use absolute URL for backend
+        const backendUrl = 'https://tumor-scope-backend.up.railway.app/predict';
 
         console.log('Sending request to:', backendUrl);
 

@@ -39,10 +39,18 @@ closeAboutBtn.addEventListener('click', () => {
    FILE UPLOAD HANDLERS
    ============================================ */
 
-// Upload box click
-uploadBox.addEventListener('click', () => {
-    fileInput.click();
-});
+function openFilePicker(e) {
+    if (e) e.preventDefault();
+    if (typeof fileInput.showPicker === 'function') {
+        fileInput.showPicker();
+    } else {
+        fileInput.click();
+    }
+}
+
+// Upload box interaction (desktop + iOS)
+uploadBox.addEventListener('click', openFilePicker);
+uploadBox.addEventListener('touchend', openFilePicker);
 
 // File input change
 fileInput.addEventListener('change', (e) => {
